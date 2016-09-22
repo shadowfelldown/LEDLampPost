@@ -1,3 +1,5 @@
+#include <SerialDebug.h>
+
 #include "FastLED.h"
 
 
@@ -14,24 +16,33 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define RIGHT_INDEX 2
 
 // Define the number of leds per rim and the number of rims. see above
-
+/*
 #define LEDS_RIGHT_A 76
 #define LEDS_RIGHT_B 95
 #define LEDS_RIGHT_C 115
 #define LEDS_LEFT_A 76
 #define LEDS_LEFT_B 95
 #define LEDS_LEFT_C 115
+#define LEDPIN_LEFT 10
+#define LEDPIN_RIGHT 5
+UNCOMMENT ABOVE WHEN DONE TESTING.*/
+
+#define LEDS_RIGHT_A 12
+#define LEDS_RIGHT_B 12
+#define LEDS_RIGHT_C 12
+#define LEDS_LEFT_A 12
+#define LEDS_LEFT_B 12
+#define LEDS_LEFT_C 12
 #define LEDPIN_LEFT 5
 #define LEDPIN_RIGHT 10
-
 
 //define color order and the type of leds
 #define LED_TYPE    WS2812
 #define COLOR_ORDER RGB
 
 //Define Brightness and framerate
-#define BRIGHTNESS         96
-#define FRAMES_PER_SECOND  100
+#define BRIGHTNESS         80
+#define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 //const int LEDS_RIGHT_A = 76;
@@ -41,7 +52,7 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 //const int LEDS_LEFT_B = 95;
 //const int LEDS_LEFT_C = 115;
 const int LEDS_RIGHT_ALL = LEDS_RIGHT_A + LEDS_RIGHT_B + LEDS_RIGHT_C;
-const int LEDS_LEFT_ALL = 0;//LEDS_LEFT_A + LEDS_LEFT_B + LEDS_LEFT_C;
+const int LEDS_LEFT_ALL = (LEDS_LEFT_A + LEDS_LEFT_B + LEDS_LEFT_C);
 //const int LEDPIN_LEFT = 6;
 //const int LEDPIN_RIGHT = 5;
 
@@ -49,7 +60,8 @@ const int LEDS_LEFT_ALL = 0;//LEDS_LEFT_A + LEDS_LEFT_B + LEDS_LEFT_C;
 //int LEDS_1 = LEDS_1a + LEDS_1b + LEDS_1c;
 //int LEDS_2 = LEDS_2a + LEDS_2b + LEDS_2c;
 CRGB left[LEDS_LEFT_ALL];
-CRGB right[LEDS_RIGHT_ALL];
+//CRGB right[LEDS_RIGHT_ALL];
+CRGB right[0];
 //CRGB rim_1a[LEDS_1a];
 //CRGB rim_1b[LEDS_1b];
 //CRGB rim_1c[LEDS_1c];
@@ -92,7 +104,10 @@ CRGB right[LEDS_RIGHT_ALL];
  const int leftC_Length = LEDS_LEFT_C;
 
 void setup() {
+  
   delay(3000); // 3 second delay for recovery
+  SERIAL_DEBUG_SETUP(9600);
+
   //Configure the left strips.
   FastLED.addLeds<LED_TYPE, LEDPIN_LEFT, COLOR_ORDER>(left, LEDS_LEFT_ALL);
 
@@ -101,7 +116,8 @@ void setup() {
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
-  
+  FastLED.clear();  
+  FastLED.show();  
 }
 
 
@@ -113,7 +129,9 @@ uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
   
 void loop()
 {
+  
   // Call the current pattern function once, updating the 'leds' array
+
   gPatterns[gCurrentPatternNumber]();
 
   // send the 'leds' array out to the actual LED strip
@@ -229,6 +247,7 @@ void mixedBag() {
 // is included below.
 
 void drawRainbow(CRGB* leds, int startpixel, int pixelcount) {
+
 /*{
   if (LedSide == LEFT_INDEX){
    int leds[] = left[];
@@ -240,7 +259,8 @@ void drawRainbow(CRGB* leds, int startpixel, int pixelcount) {
   // FastLED's built-in rainbow generator
   
   //fill_rainbow( leds             , NUM_LEDS,   gHue, 17);
-    fill_rainbow( leds + startpixel, pixelcount, gHue, 17);
+    fill_rainbow(&(leds[startpixel]),pixelcount, gHue, 17);
+      
 }
 
 void drawConfetti(CRGB* leds, int startpixel, int pixelcount) 
@@ -248,20 +268,20 @@ void drawConfetti(CRGB* leds, int startpixel, int pixelcount)
   // random colored speckles that blink in and fade smoothly
   
   //fadeToBlackBy( leds             , NUM_LEDS  , 30);
-    fadeToBlackBy( leds + startpixel, pixelcount, 30);
+    fadeToBlackBy( leds, pixelcount, 30);
     
   //int pos = random16( NUM_LEDS);
     int pos = random16( pixelcount);
     
-  //leds[pos             ] += CHSV( gHue -32 + random8(64), 200, 255);
-    leds[pos + startpixel] += CHSV( gHue -32 + random8(64), 200, 255);
+  //left[pos             ] += CHSV( gHue -32 + random8(64), 200, 255);
+    left[pos + startpixel] += CHSV( gHue -32 + random8(64), 200, 255);
 }
 void drawJuggle(CRGB* leds, int startpixel, int pixelcount) {
   // eight colored dots, weaving in and out of sync with each other
-  fadeToBlackBy( leds + startpixel, pixelcount, 30);
+  fadeToBlackBy( leds, pixelcount, 30);
   byte dothue = 0;
   for( int i = 0; i < 8; i++) {
-    leds[beatsin16(i+7,0,pixelcount)] |= CHSV(dothue, 200, 255);
+    left[beatsin16(i+7,0,pixelcount)] |= CHSV(dothue, 200, 255);
     dothue += 32;
   }
 }
@@ -271,5 +291,5 @@ void drawSinelon(CRGB* leds, int startpixel, int pixelcount)
   // a colored dot sweeping back and forth, with fading trails
   fadeToBlackBy( leds + startpixel, pixelcount, 20);
   int pos = beatsin16(13,0,pixelcount);
-  leds[pos + startpixel] += CHSV( gHue, 255, 192);
+  left[pos + startpixel] += CHSV( gHue, 255, 192);
 }
