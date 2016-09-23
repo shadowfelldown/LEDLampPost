@@ -1,7 +1,7 @@
 #include <SerialDebug.h>
 
 #include "FastLED.h"
-
+#include <time.h>
 
 /*
  *code is for the LED Streetlamp.
@@ -16,7 +16,7 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define RIGHT_INDEX 2
 
 // Define the number of leds per rim and the number of rims. see above
-
+/*
 #define LEDS_RIGHT_A 76
 #define LEDS_RIGHT_B 95
 #define LEDS_RIGHT_C 115
@@ -26,10 +26,10 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define LEDPIN_LEFT 22
 #define LEDPIN_RIGHT 21
 //UNCOMMENT ABOVE WHEN DONE TESTING.*/
-/*
-#define LEDS_RIGHT_A 2
-#define LEDS_RIGHT_B 2
-#define LEDS_RIGHT_C 2
+
+#define LEDS_RIGHT_A 10
+#define LEDS_RIGHT_B 10
+#define LEDS_RIGHT_C 10
 #define LEDS_LEFT_A 12
 #define LEDS_LEFT_B 12
 #define LEDS_LEFT_C 12
@@ -41,7 +41,7 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define COLOR_ORDER RGB
 
 //Define Brightness and framerate
-#define BRIGHTNESS         50
+#define BRIGHTNESS         10
 #define FRAMES_PER_SECOND  200
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 bool randomSeeded = false;
@@ -109,11 +109,14 @@ CRGBSet leftb(left(leftB_Start, (leftB_Start+leftB_Length)));
 CRGBSet leftc(left(leftC_Start, (leftC_Start+leftC_Length)));
 CRGBSet leftAll(left(0,LEDS_LEFT_ALL));
 
-
+//TESTING//
+int cycleCount = 0;
+//END - TESTING//
 void setup() {
-  
+
   delay(3000); // 3 second delay for recovery
-  SERIAL_DEBUG_SETUP(9600);
+  random16_set_seed(analogRead(A0));
+  SERIAL_DEBUG_SETUP(38400);
 
   //Configure the left strips.
   FastLED.addLeds<LED_TYPE, LEDPIN_LEFT, COLOR_ORDER>(left, LEDS_LEFT_ALL);
@@ -123,13 +126,15 @@ void setup() {
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
+  FastLED.clear();
+  FastLED.show();
 }
 
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
-SimplePatternList script_Patterns = {allBlend, allEase, rainbowConfetti_Mirror, rainbowConfetti_Mirror2, allRainbow, allConfetti, allJuggle, allSinelon, mixedBag, Random};
-
+//SimplePatternList script_Patterns = {allBlend, allEase, rainbowConfetti_Mirror, rainbowConfetti_Mirror2, allRainbow, allConfetti, allJuggle, allSinelon, mixedBag, Random};
+SimplePatternList script_Patterns = {Random, Random, Random, Random, Random, Random, Random, Random};
 uint8_t script_CurrentPatternNumber = 0; // Index number of which pattern is current
 
 typedef void (*IndividualPatterns[])(CRGB* leds, int pixelcount);
@@ -138,7 +143,7 @@ IndividualPatterns indep_Patterns = { drawRainbow, drawConfetti, drawJuggle, dra
 uint8_t indep_CurrentPatternNumber = 0; // Index number of which pattern is current
 void loop()
 {
-  
+   DEBUG("Looped", millis());
   // Call the current pattern function once, updating the 'leds' array
 
   script_Patterns[script_CurrentPatternNumber]();
@@ -149,23 +154,22 @@ void loop()
   FastLED.delay(1000/FRAMES_PER_SECOND); 
 
   // do some periodic updates
-  EVERY_N_MILLISECONDS( 15) { gHue++; } // slowly cycle the "base color" through the rainbow
+  EVERY_N_MILLISECONDS( 20) { gHue++; } // slowly cycle the "base color" through the rainbow
   EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-const int randomSize = ARRAY_SIZE( indep_Patterns);
+const int randomSize = ARRAY_SIZE(indep_Patterns);
 int randomArray[randomSize];
 void nextPattern()
 {
+  DEBUG("Called Next Pattern", millis());
   // add one to the current pattern number, and wrap around at the end
   script_CurrentPatternNumber = random16(ARRAY_SIZE(script_Patterns));
   //script_CurrentPatternNumber = (script_CurrentPatternNumber + 1) % ARRAY_SIZE( script_Patterns);
   indep_CurrentPatternNumber = (indep_CurrentPatternNumber + 1) % ARRAY_SIZE( indep_Patterns);
   // Turn off random
-  if (randomSeeded){
     randomSeeded = false;
-  }
 }
 void indep_nextPattern()
 {
@@ -259,11 +263,14 @@ void mixedBag() {
 }
 
 void Random() {
+  DEBUG("random Seeded", randomSeeded);
 if (randomSeeded == false){
 for (int randID=0; randID < randomSize; randID++){
   randomArray[randID] = random16(randomSize);
+  DEBUG("array contents", randomArray[randID]);
 }
 randomSeeded = true;
+DEBUG("random Seeded", randomSeeded);
 }
 else{
   indep_Patterns[randomArray[0]](righta, rightA_Length);
@@ -274,6 +281,8 @@ else{
 
   indep_Patterns[randomArray[4]](rightc, rightC_Length);
   indep_Patterns[randomArray[5]](leftc, leftC_Length);
+  cycleCount = (cycleCount+1);
+  DEBUG("Printed LEDS", cycleCount);
 }
 }
 void allEase() {
