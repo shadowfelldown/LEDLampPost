@@ -16,7 +16,7 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define RIGHT_INDEX 2
 
 // Define the number of leds per rim and the number of rims. see above
-/*
+
 #define LEDS_RIGHT_A 76
 #define LEDS_RIGHT_B 95
 #define LEDS_RIGHT_C 115
@@ -26,7 +26,7 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define LEDPIN_LEFT 22
 #define LEDPIN_RIGHT 21
 //UNCOMMENT ABOVE WHEN DONE TESTING.*/
-
+/*
 #define LEDS_RIGHT_A 10
 #define LEDS_RIGHT_B 10
 #define LEDS_RIGHT_C 10
@@ -41,7 +41,7 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define COLOR_ORDER RGB
 
 //Define Brightness and framerate
-#define BRIGHTNESS         10
+#define BRIGHTNESS         255
 #define FRAMES_PER_SECOND  200
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 bool randomSeeded = false;
@@ -114,6 +114,10 @@ int cycleCount = 0;
 //END - TESTING//
 void setup() {
 
+//Testing
+
+//Testing
+
   delay(3000); // 3 second delay for recovery
   random16_set_seed(analogRead(A0));
   SERIAL_DEBUG_SETUP(38400);
@@ -134,7 +138,8 @@ void setup() {
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList script_Patterns = {allBlend, allEase, rainbowConfetti_Mirror, rainbowConfetti_Mirror2, allRainbow, allConfetti, allJuggle, allSinelon, mixedBag, Random};
-SimplePatternList script_Patterns = {Random, Random, Random, Random, Random, Random, Random, Random};
+//SimplePatternList script_Patterns = {Random, Random, Random, Random, Random, Random, Random, Random};
+SimplePatternList script_Patterns = {testPattern, testPattern, testPattern, testPattern, testPattern, testPattern, testPattern, testPattern};
 uint8_t script_CurrentPatternNumber = 0; // Index number of which pattern is current
 
 typedef void (*IndividualPatterns[])(CRGB* leds, int pixelcount);
@@ -178,6 +183,17 @@ void indep_nextPattern()
 }
 //Conductor patterns. tell each side which led patterns to use.
 
+void testPattern() {
+ 
+  fill_solid(righta,rightA_Length, CHSV(0,255,255));
+  fill_solid(lefta,leftA_Length, CHSV(0,255,255));
+  
+  fill_solid(rightb, rightB_Length, CHSV(124,255,255));
+  fill_solid(leftb, leftB_Length, CHSV(124,255,255));
+
+  fill_solid(rightc, rightC_Length,CHSV(255,255,255));
+  fill_solid(leftc, leftC_Length,CHSV(255,255,255));
+}
 void rainbowConfetti_Mirror() {
 DEBUG("rainbowConfetti_Mirror", millis());
   drawRainbow(righta, rightA_Length);
@@ -353,6 +369,9 @@ void drawRainbow(CRGB* leds, int pixelcount) {
       
 }
 
+void drawSolid(CRGB* leds, int pixelcount) {
+fill_solid( leds, pixelcount, CHSV(random16(255),100,100)); 
+}
 void drawConfetti(CRGB* leds, int pixelcount) 
 {
   // random colored speckles that blink in and fade smoothly
