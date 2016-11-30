@@ -1,5 +1,5 @@
 #include <SerialDebug.h>
-
+#define FASTLED_ALLOW_INTERRUPTS 0
 #include "FastLED.h"
 
 
@@ -17,12 +17,12 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 
 // Define the number of leds per rim and the number of rims. see above
 
-#define LEDS_RIGHT_A 76
-#define LEDS_RIGHT_B 95
-#define LEDS_RIGHT_C 115
-#define LEDS_LEFT_A 76
-#define LEDS_LEFT_B 95
-#define LEDS_LEFT_C 115
+#define LEDS_RIGHT_A 20
+#define LEDS_RIGHT_B 20
+#define LEDS_RIGHT_C 20
+#define LEDS_LEFT_A 21
+#define LEDS_LEFT_B 21
+#define LEDS_LEFT_C 21
 #define LEDPIN_LEFT 22
 #define LEDPIN_RIGHT 21
 //UNCOMMENT ABOVE WHEN DONE TESTING.*/
@@ -41,8 +41,8 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 #define COLOR_ORDER RGB
 
 //Define Brightness and framerate
-#define BRIGHTNESS         50
-#define FRAMES_PER_SECOND  200
+#define BRIGHTNESS         100
+#define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 bool randomSeeded = false;
 //more variables. possibly redundant.
@@ -51,7 +51,7 @@ bool randomSeeded = false;
   // ranges of LEDs that you like here.  For this demo, the "left"
   // 1/4th of the LEDs will draw 'confetti', and the "right" 3/4ths
   // will draw a rainbow.  A few pixels are left blank between them.
- const int blankPixels = 0;
+ const int blankPixels = 1;
   
   // "Left" segment will be pixels 0..(NUM_LEDS/4)-1, i.e. the low-numbered quarter.
   // If you have 60 pixels, 1a_Start = 0, and 1a_Length = 15.
@@ -113,7 +113,7 @@ CRGBSet leftAll(left(0,LEDS_LEFT_ALL));
 void setup() {
   
   delay(3000); // 3 second delay for recovery
-  SERIAL_DEBUG_SETUP(9600);
+  SERIAL_DEBUG_SETUP(38400);
 
   //Configure the left strips.
   FastLED.addLeds<LED_TYPE, LEDPIN_LEFT, COLOR_ORDER>(left, LEDS_LEFT_ALL);
@@ -128,12 +128,12 @@ void setup() {
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
-SimplePatternList script_Patterns = {allBlend, allEase, rainbowConfetti_Mirror, rainbowConfetti_Mirror2, allRainbow, allConfetti, allJuggle, allSinelon, mixedBag, Random};
+SimplePatternList script_Patterns = {allEase, rainbowConfetti_Mirror, rainbowConfetti_Mirror2, allRainbow, allConfetti, allJuggle, allSinelon, mixedBag, Random};
 
 uint8_t script_CurrentPatternNumber = 0; // Index number of which pattern is current
 
 typedef void (*IndividualPatterns[])(CRGB* leds, int pixelcount);
-IndividualPatterns indep_Patterns = { drawRainbow, drawConfetti, drawJuggle, drawSinelon, drawBlend, drawEase};
+IndividualPatterns indep_Patterns = { drawRainbow, drawConfetti, drawJuggle, drawSinelon, drawEase};
 
 uint8_t indep_CurrentPatternNumber = 0; // Index number of which pattern is current
 void loop()
@@ -199,7 +199,8 @@ DEBUG("rainbowConfetti_Mirror2", millis());
 }
 
 void allRainbow() {
-
+  DEBUG("allRainbow", millis());
+//good
   drawRainbow(righta,rightA_Length);
   drawRainbow(lefta,leftA_Length);
   
@@ -211,7 +212,7 @@ void allRainbow() {
 }
 
 void allConfetti() {
-
+  DEBUG("allConfetti", millis());
   drawConfetti(righta, rightA_Length);
   drawConfetti(lefta, leftA_Length);
   
@@ -223,7 +224,7 @@ void allConfetti() {
 }
 
 void allJuggle() {
-
+  DEBUG("alljuggle", millis());
   drawJuggle(rightAll, rightA_Length);
   drawJuggle(leftAll, leftA_Length);
   
@@ -235,7 +236,8 @@ void allJuggle() {
 }
 
 void allSinelon() {
-
+    DEBUG("allSinelon", millis());
+//good
   drawSinelon(rightAll, rightA_Length);
   drawSinelon(leftAll, leftA_Length);
   
@@ -247,7 +249,7 @@ void allSinelon() {
 }
 
 void mixedBag() {
-
+    DEBUG("mixedBag", millis());
   drawSinelon(righta, rightA_Length);
   drawJuggle(lefta, leftA_Length);
   
@@ -259,6 +261,7 @@ void mixedBag() {
 }
 
 void Random() {
+  DEBUG("random", millis());
 if (randomSeeded == false){
 for (int randID=0; randID < randomSize; randID++){
   randomArray[randID] = random16(randomSize);
@@ -277,7 +280,7 @@ else{
 }
 }
 void allEase() {
-
+  DEBUG("allEase", millis());
   drawEase(righta, rightA_Length);
   drawEase(lefta, leftA_Length);
   
@@ -287,17 +290,7 @@ void allEase() {
   drawEase(rightc, rightC_Length);
   drawEase(leftc, leftC_Length);
 }
-void allBlend() {
 
-  drawBlend(righta, rightA_Length);
-  drawBlend(lefta, leftA_Length);
-  
-  drawBlend(rightb, rightB_Length);
-  drawBlend(leftb, leftB_Length);
-
-  drawBlend(rightc, rightC_Length);
-  drawBlend(leftc, leftC_Length);
-}
 // Animation 'draw' functions
 // Each animation draw function takes a starting pixel number
 // and a count of how many pixels to draw.
@@ -307,17 +300,6 @@ void allBlend() {
 // has been included, commented out, and the new parameterized version
 // is included below.
 
-void Blend() {
-
-  drawBlend(righta, rightA_Length);
-  drawBlend(lefta, leftA_Length);
-  
-  drawBlend(rightb, rightB_Length);
-  drawBlend(leftb, leftB_Length);
-
-  drawBlend(rightc, rightC_Length);
-  drawBlend(leftc, leftC_Length);
-}
 // Animation 'draw' functions
 // Each animation draw function takes a starting pixel number
 // and a count of how many pixels to draw.
@@ -374,15 +356,7 @@ void drawSinelon(CRGB* leds, int pixelcount)
   int pos = beatsin16(13,0,pixelcount);
   leds[pos] += CHSV( gHue, 255, 192);
 }
-void drawBlend(CRGB* leds, int pixelcount) {
-  uint8_t starthue = gHue;
-  uint8_t endhue = gHue % random16(255);
-  if (starthue < endhue) {
-    fill_gradient(leds, pixelcount, CHSV(starthue,255,255), CHSV(endhue,255,255), FORWARD_HUES);    // If we don't have this, the colour fill will flip around
-  } else {
-    fill_gradient(leds, pixelcount, CHSV(starthue,255,255), CHSV(endhue,255,255), BACKWARD_HUES);
-  }
-} // blendme()
+
 
 void drawEase(CRGB* leds, int pixelcount) {
   
