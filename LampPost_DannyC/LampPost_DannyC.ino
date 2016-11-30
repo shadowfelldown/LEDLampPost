@@ -17,12 +17,12 @@ Written 6/24/2016 by Daniel Pogue (shadowfelldown@gamil.com)
 
 // Define the number of leds per rim and the number of rims. see above
 
-#define LEDS_RIGHT_A 76
-#define LEDS_RIGHT_B 95
-#define LEDS_RIGHT_C 115
-#define LEDS_LEFT_A 76
-#define LEDS_LEFT_B 95
-#define LEDS_LEFT_C 115
+#define LEDS_RIGHT_A 20
+#define LEDS_RIGHT_B 20
+#define LEDS_RIGHT_C 20
+#define LEDS_LEFT_A 21
+#define LEDS_LEFT_B 21
+#define LEDS_LEFT_C 21
 #define LEDPIN_LEFT 22
 #define LEDPIN_RIGHT 21
 //UNCOMMENT ABOVE WHEN DONE TESTING.*/
